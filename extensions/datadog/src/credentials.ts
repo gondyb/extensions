@@ -1,5 +1,6 @@
-import { execSync } from "child_process";
 import { getPreferenceValues } from "@raycast/api";
+import { useExec } from "@raycast/utils";
+import { useMemo } from "react";
 
 export type Credentials = {
   apiKey: string;
@@ -21,56 +22,83 @@ const parseEnvOutput = (output: string) => {
   return map;
 };
 
-const runAuthCommand = (command: string): Record<string, string> => {
-  const pathExt = `${process.env.PATH || ""}:/opt/homebrew/bin:/usr/local/bin`;
-  const output = execSync(command, {
-    encoding: "utf-8",
-    timeout: 120_000,
-    stdio: ["ignore", "pipe", "pipe"],
-    env: { ...process.env, PATH: pathExt },
-    shell: "/bin/zsh",
-  });
-  return parseEnvOutput(output);
+type Prefs = {
+  "auth-method"?: string;
+  "auth-command"?: string;
+  "api-key"?: string;
+  "app-key"?: string;
+  domain?: string;
+  server?: string;
 };
 
-export const resolveCredentials = (): Credentials => {
-  const prefs = getPreferenceValues();
-  const method = prefs["auth-method"] || "api-keys";
+const resolveApiKeyCreds = (prefs: Prefs): Credentials => {
   const domainSite = prefs.domain ? siteFromDomain(prefs.domain) : "";
   const legacySite = prefs.server || "";
-
-  if (method === "command") {
-    const command = (prefs["auth-command"] || "").trim();
-    if (!command) {
-      throw new Error(
-        "Auth Command is empty. Set a command in Raycast preferences that prints DD_API_KEY=… and DD_APP_KEY=… on stdout.",
-      );
-    }
-    let env: Record<string, string>;
-    try {
-      env = runAuthCommand(command);
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      throw new Error(`Auth command failed: ${msg}`);
-    }
-    if (!env.DD_API_KEY || !env.DD_APP_KEY) {
-      throw new Error("Auth command output did not contain DD_API_KEY and DD_APP_KEY.");
-    }
-    const site = env.DD_SITE || domainSite || legacySite;
-    if (!site) {
-      throw new Error(
-        "No site could be determined. Set Domain in preferences or have the auth command output DD_SITE.",
-      );
-    }
-    return { apiKey: env.DD_API_KEY, appKey: env.DD_APP_KEY, site };
-  }
-
   if (!prefs["api-key"] || !prefs["app-key"]) {
     throw new Error("API Key and App Key are required when Authentication is 'API & App Keys'.");
   }
   const site = domainSite || legacySite;
-  if (!site) {
-    throw new Error("Domain is required when Authentication is 'API & App Keys'.");
-  }
+  if (!site) throw new Error("Domain is required when Authentication is 'API & App Keys'.");
   return { apiKey: prefs["api-key"], appKey: prefs["app-key"], site };
+};
+
+const resolveCommandCreds = (prefs: Prefs, output: string): Credentials => {
+  const env = parseEnvOutput(output);
+  if (!env.DD_API_KEY || !env.DD_APP_KEY) {
+    throw new Error("Auth command output did not contain DD_API_KEY and DD_APP_KEY.");
+  }
+  const domainSite = prefs.domain ? siteFromDomain(prefs.domain) : "";
+  const legacySite = prefs.server || "";
+  const site = env.DD_SITE || domainSite || legacySite;
+  if (!site) {
+    throw new Error("No site could be determined. Set Domain in preferences or have the auth command output DD_SITE.");
+  }
+  return { apiKey: env.DD_API_KEY, appKey: env.DD_APP_KEY, site };
+};
+
+export type CredentialsState = {
+  credentials?: Credentials;
+  isLoading: boolean;
+  error?: Error;
+};
+
+export const useCredentials = (): CredentialsState => {
+  const prefs = getPreferenceValues<Prefs>();
+  const method = prefs["auth-method"] || "api-keys";
+  const command = (prefs["auth-command"] || "").trim();
+  const isCommand = method === "command";
+
+  const pathExt = `${process.env.PATH || ""}:/opt/homebrew/bin:/usr/local/bin`;
+  const { data, isLoading, error } = useExec("/bin/zsh", ["-c", command || "true"], {
+    execute: isCommand && command.length > 0,
+    shell: false,
+    env: { ...process.env, PATH: pathExt },
+    timeout: 120_000,
+    keepPreviousData: true,
+  });
+
+  return useMemo<CredentialsState>(() => {
+    if (!isCommand) {
+      try {
+        return { credentials: resolveApiKeyCreds(prefs), isLoading: false };
+      } catch (e) {
+        return { isLoading: false, error: e instanceof Error ? e : new Error(String(e)) };
+      }
+    }
+    if (!command) {
+      return {
+        isLoading: false,
+        error: new Error(
+          "Auth Command is empty. Set a command in Raycast preferences that prints DD_API_KEY=… and DD_APP_KEY=… on stdout.",
+        ),
+      };
+    }
+    if (error) return { isLoading: false, error: new Error(`Auth command failed: ${error.message}`) };
+    if (isLoading || data === undefined) return { isLoading: true };
+    try {
+      return { credentials: resolveCommandCreds(prefs, data), isLoading: false };
+    } catch (e) {
+      return { isLoading: false, error: e instanceof Error ? e : new Error(String(e)) };
+    }
+  }, [isCommand, command, data, isLoading, error]);
 };

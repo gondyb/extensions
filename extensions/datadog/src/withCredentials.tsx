@@ -1,29 +1,27 @@
 import { Action, ActionPanel, Detail, Icon, openExtensionPreferences } from "@raycast/api";
 import { ComponentType } from "react";
-import { credentialsError } from "./datadog-api";
+import { useCredentials } from "./credentials";
+import { initApi } from "./datadog-api";
 
-const CredentialsErrorView = ({ error }: { error: Error }) => {
-  const markdown = `# Datadog credentials unavailable
-
-${error.message}
-
-Open the extension preferences to update your authentication settings.`;
-
-  return (
-    <Detail
-      markdown={markdown}
-      actions={
-        <ActionPanel>
-          <Action title="Open Extension Preferences" icon={Icon.Gear} onAction={openExtensionPreferences} />
-        </ActionPanel>
-      }
-    />
-  );
-};
+const CredentialsErrorView = ({ error }: { error: Error }) => (
+  <Detail
+    markdown={`# Datadog credentials unavailable\n\n${error.message}\n\nOpen the extension preferences to update your authentication settings.`}
+    actions={
+      <ActionPanel>
+        <Action title="Open Extension Preferences" icon={Icon.Gear} onAction={openExtensionPreferences} />
+      </ActionPanel>
+    }
+  />
+);
 
 export function withCredentials<P extends object>(Component: ComponentType<P>) {
   const Wrapped = (props: P) => {
-    if (credentialsError) return <CredentialsErrorView error={credentialsError} />;
+    const { credentials, isLoading, error } = useCredentials();
+
+    if (error) return <CredentialsErrorView error={error} />;
+    if (isLoading || !credentials) return <Detail isLoading markdown="# Resolving Datadog credentials…" />;
+
+    initApi(credentials);
     return <Component {...props} />;
   };
   Wrapped.displayName = `withCredentials(${Component.displayName || Component.name || "Component"})`;
