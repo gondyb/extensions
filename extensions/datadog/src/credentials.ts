@@ -97,7 +97,7 @@ export const useCredentials = (): CredentialsState => {
       if (error) {
         const isTimeout = /timed out/i.test(error.message);
         const msg = isTimeout
-          ? "Auth command timed out — it's probably waiting on an interactive login. Run it once in a terminal (e.g. `dd-auth -- true`) to complete the browser flow, then reopen this command."
+          ? `Auth command timed out — it's probably waiting on an interactive login. Run this once in a terminal to complete the browser flow, then reopen this command:\n\n\`${command}\``
           : `Auth command failed: ${error.message}`;
         return { isLoading: false, error: new Error(msg) };
       }
