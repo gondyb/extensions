@@ -16,10 +16,10 @@ const CredentialsErrorView = ({ error }: { error: Error }) => (
 
 export function withCredentials<P extends object>(Component: ComponentType<P>) {
   const Wrapped = (props: P) => {
-    const { credentials, isLoading, error } = useCredentials();
+    const { credentials, error } = useCredentials();
 
     if (error) return <CredentialsErrorView error={error} />;
-    if (isLoading || !credentials) return <Detail isLoading markdown="# Resolving Datadog credentials…" />;
+    if (!credentials) return <Detail isLoading markdown="# Resolving Datadog credentials…" />;
 
     initApi(credentials);
     return <Component {...props} />;

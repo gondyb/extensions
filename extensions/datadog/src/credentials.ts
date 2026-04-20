@@ -69,11 +69,11 @@ export const useCredentials = (): CredentialsState => {
   const isCommand = method === "command";
 
   const pathExt = `${process.env.PATH || ""}:/opt/homebrew/bin:/usr/local/bin`;
-  const { data, isLoading, error } = useExec("/bin/zsh", ["-c", command || "true"], {
+  const { data, isLoading, error } = useExec(command || "true", {
     execute: isCommand && command.length > 0,
-    shell: false,
+    shell: "/bin/zsh",
     env: { ...process.env, PATH: pathExt },
-    timeout: 120_000,
+    timeout: 10_000,
     keepPreviousData: true,
   });
 
@@ -93,10 +93,18 @@ export const useCredentials = (): CredentialsState => {
         ),
       };
     }
-    if (error) return { isLoading: false, error: new Error(`Auth command failed: ${error.message}`) };
-    if (isLoading || data === undefined) return { isLoading: true };
+    if (data === undefined) {
+      if (error) {
+        const isTimeout = /timed out/i.test(error.message);
+        const msg = isTimeout
+          ? "Auth command timed out — it's probably waiting on an interactive login. Run it once in a terminal (e.g. `dd-auth -- true`) to complete the browser flow, then reopen this command."
+          : `Auth command failed: ${error.message}`;
+        return { isLoading: false, error: new Error(msg) };
+      }
+      return { isLoading: true };
+    }
     try {
-      return { credentials: resolveCommandCreds(prefs, data), isLoading: false };
+      return { credentials: resolveCommandCreds(prefs, data), isLoading };
     } catch (e) {
       return { isLoading: false, error: e instanceof Error ? e : new Error(String(e)) };
     }
