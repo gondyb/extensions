@@ -1,5 +1,13 @@
 # Datadog Changelog
 
+## [Add Case Management] - 2026-04-20
+
+* Add "List Cases" command — browse, search, and filter Case Management cases by project. Shows assignee Gravatar and case priority.
+* Change case status directly from the list via the Change Status submenu (populated from each case's type configuration).
+* Assign or unassign yourself from a case via the Assign to Me / Unassign action.
+* Pin your cases to the top of the list in an "Assigned to Me" section.
+* Per-command `Default Filter` preference — a raw Datadog search string prepended to every query.
+
 ## [Command Line authentication] - 2026-04-20
 
 * Add "Command Line" authentication option — resolve credentials by running a shell command that prints `DD_API_KEY=…`, `DD_APP_KEY=…`, and optionally `DD_SITE=…` on stdout.
@@ -19,13 +27,3 @@
 * datadog notebooks, monitors and customizable domain
 
 ## [Datadog notebooks, monitors and customizable domain] - 2022-02-21
-
-* datadog notebooks, monitors and customizable domain
-
-## [Add dropdown to select host] - 2022-02-01
-
-* Datadog: add dropdown to select host 
-
-## [Add Datadog extension] - 2022-01-20
-
-Initial version code
