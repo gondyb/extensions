@@ -1,6 +1,7 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useRUM } from "./useRUM";
 import { linkDomain } from "./util";
+import { withCredentials } from "./withCredentials";
 
 const rumApplicationIcon = (type: string) => {
   if (type == "browser") type = "javascript";
@@ -8,8 +9,7 @@ const rumApplicationIcon = (type: string) => {
   return `https://static.datadoghq.com/static/images/logos/${type}_avatar.svg`;
 };
 
-// noinspection JSUnusedGlobalSymbols
-export default function CommandListRUM() {
+function CommandListRUM() {
   const { rumApplications, isLoading } = useRUM();
 
   return (
@@ -61,3 +61,5 @@ export default function CommandListRUM() {
     </List>
   );
 }
+
+export default withCredentials(CommandListRUM);

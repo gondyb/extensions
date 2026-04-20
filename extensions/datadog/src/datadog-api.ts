@@ -1,9 +1,22 @@
-import { getPreferenceValues } from "@raycast/api";
 import { client, v1, v2 } from "@datadog/datadog-api-client";
 import fetch, { Response } from "node-fetch";
 import { APM } from "./types";
+import { resolveCredentials } from "./credentials";
 
-const { "api-key": API_KEY, "app-key": APP_KEY, server: SERVER } = getPreferenceValues();
+export let credentialsError: Error | undefined;
+export let resolvedSite = "";
+let API_KEY = "";
+let APP_KEY = "";
+let SERVER = "";
+try {
+  const creds = resolveCredentials();
+  API_KEY = creds.apiKey;
+  APP_KEY = creds.appKey;
+  SERVER = creds.site;
+  resolvedSite = creds.site;
+} catch (e) {
+  credentialsError = e instanceof Error ? e : new Error(String(e));
+}
 
 const configuration = client.createConfiguration({ authMethods: { apiKeyAuth: API_KEY, appKeyAuth: APP_KEY } });
 configuration.setServerVariables({
@@ -55,9 +68,13 @@ const parseResponseToJSON = (resp: Response) =>
   resp.json().then(json => {
     if (resp.ok) return json;
 
-    const err = json as { errors: string[] };
+    const raw = (json as { errors?: Array<string | { title?: string; detail?: string; code?: string }> }).errors;
+    const messages = (raw ?? []).map(e => {
+      if (typeof e === "string") return e;
+      return e.detail || e.title || e.code || JSON.stringify(e);
+    });
 
-    throw new Error(err.errors.join(", "));
+    throw new Error(messages.length ? messages.join(", ") : `HTTP ${resp.status}`);
   });
 
 const params = {

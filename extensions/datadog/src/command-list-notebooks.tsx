@@ -1,9 +1,9 @@
 import { Action, ActionPanel, Color, Icon, Image, List } from "@raycast/api";
 import { useNotebooks } from "./useNotebooks";
 import { linkDomain, notEmpty } from "./util";
+import { withCredentials } from "./withCredentials";
 
-// noinspection JSUnusedGlobalSymbols
-export default function CommandListNotebooks() {
+function CommandListNotebooks() {
   const { notebooks, notebooksAreLoading } = useNotebooks();
 
   return (
@@ -44,3 +44,5 @@ export default function CommandListNotebooks() {
     </List>
   );
 }
+
+export default withCredentials(CommandListNotebooks);
