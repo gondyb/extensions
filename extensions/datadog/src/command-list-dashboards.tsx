@@ -2,9 +2,9 @@ import { ActionPanel, List, Icon, Action, Color } from "@raycast/api";
 import { linkDomain } from "./util";
 import { useState } from "react";
 import { useDashboards } from "./useDashboards";
+import { withCredentials } from "./withCredentials";
 
-// noinspection JSUnusedGlobalSymbols
-export default function CommandListDashboards() {
+function CommandListDashboards() {
   const [query, setQuery] = useState("");
   const { dashboards, totalDashboards, dashboardsAreLoading } = useDashboards(query);
 
@@ -37,3 +37,5 @@ export default function CommandListDashboards() {
     </List>
   );
 }
+
+export default withCredentials(CommandListDashboards);

@@ -14,9 +14,9 @@ import { linkDomain } from "./util";
 import { useMonitors } from "./useMonitors";
 import { MonitorSearchResponse } from "@datadog/datadog-api-client/dist/packages/datadog-api-client-v1/models/MonitorSearchResponse";
 import { MonitorSearchResult } from "@datadog/datadog-api-client/dist/packages/datadog-api-client-v1/models/MonitorSearchResult";
+import { withCredentials } from "./withCredentials";
 
-// noinspection JSUnusedGlobalSymbols
-export default function CommandListMonitors() {
+function CommandListMonitors() {
   const [query, setQuery] = useState("");
   const { monitorResponse, monitorsAreLoading } = useMonitors(query);
 
@@ -84,3 +84,5 @@ const statusIcon = (status: MonitorOverallStates | undefined) => {
 
   return { light: "", dark: "" };
 };
+
+export default withCredentials(CommandListMonitors);

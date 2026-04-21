@@ -69,55 +69,58 @@
   ],
   "preferences": [
     {
+      "type": "dropdown",
+      "name": "auth-method",
+      "title": "Authentication",
+      "description": "How to obtain Datadog credentials.",
+      "required": true,
+      "default": "api-keys",
+      "data": [
+        { "title": "API & App Keys", "value": "api-keys" },
+        { "title": "Command Line", "value": "command" }
+      ]
+    },
+    {
       "type": "password",
       "name": "api-key",
       "title": "API Key",
-      "description": "Datadog API Key",
-      "required": true
+      "description": "Datadog API Key (only used when Authentication is 'API & App Keys')",
+      "required": false
     },
     {
       "type": "password",
       "name": "app-key",
       "title": "App Key",
-      "description": "Datadog Application Key",
-      "required": true
+      "description": "Datadog Application Key (only used when Authentication is 'API & App Keys')",
+      "required": false
+    },
+    {
+      "type": "textfield",
+      "name": "auth-command",
+      "title": "Auth Command",
+      "description": "Shell command that prints KEY=VALUE lines on stdout (DD_API_KEY, DD_APP_KEY, and optionally DD_SITE). Used when Authentication is 'Command Line'.",
+      "required": false
     },
     {
       "type": "textfield",
       "name": "domain",
       "title": "Domain",
-      "description": "Custom domain for Datadog URLs",
+      "description": "Datadog web UI domain (e.g. app.datadoghq.com, us3.datadoghq.com, app.datadoghq.eu). If it starts with 'app.', the leading 'app.' is stripped to produce the API site; otherwise the domain is used as-is. Optional when the auth command outputs a DD_SITE line, or when the legacy Server preference is set.",
       "required": false
     },
     {
       "type": "dropdown",
       "name": "server",
-      "title": "Server",
-      "description": "Datadog server",
-      "required": true,
+      "title": "Server (legacy)",
+      "description": "Legacy Datadog server selector. Kept for backwards compatibility — prefer Domain.",
+      "required": false,
       "data": [
-        {
-          "title": "US",
-          "value": "datadoghq.com"
-        },
-        {
-          "title": "US3",
-          "value": "us3.datadoghq.com"
-        },
-        {
-          "title": "US5",
-          "value": "us5.datadoghq.com"
-        },
-        {
-          "title": "EU",
-          "value": "datadoghq.eu"
-        },
-        {
-          "title": "US1-FED",
-          "value": "ddog-gov.com"
-        }
-      ],
-      "default": "datadoghq.com"
+        { "title": "US", "value": "datadoghq.com" },
+        { "title": "US3", "value": "us3.datadoghq.com" },
+        { "title": "US5", "value": "us5.datadoghq.com" },
+        { "title": "EU", "value": "datadoghq.eu" },
+        { "title": "US1-FED", "value": "ddog-gov.com" }
+      ]
     }
   ],
   "dependencies": {

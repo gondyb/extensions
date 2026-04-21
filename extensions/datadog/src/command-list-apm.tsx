@@ -1,9 +1,9 @@
 import { Action, ActionPanel, List } from "@raycast/api";
 import { useAPM } from "./useAPM";
 import { linkDomain, notEmpty } from "./util";
+import { withCredentials } from "./withCredentials";
 
-// noinspection JSUnusedGlobalSymbols
-export default function CommandListAPM() {
+function CommandListAPM() {
   const { apm, apmIsLoading } = useAPM();
 
   return (
@@ -26,3 +26,5 @@ export default function CommandListAPM() {
     </List>
   );
 }
+
+export default withCredentials(CommandListAPM);

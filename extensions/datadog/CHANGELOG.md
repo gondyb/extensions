@@ -1,5 +1,11 @@
 # Datadog Changelog
 
+## [Command Line authentication] - 2026-04-20
+
+* Add "Command Line" authentication option — resolve credentials by running a shell command that prints `DD_API_KEY=…`, `DD_APP_KEY=…`, and optionally `DD_SITE=…` on stdout.
+* Replace the `Server` dropdown with a single `Domain` textfield — the API site is inferred by stripping a leading `app.` prefix when present. The legacy `Server` preference is still read for backwards compatibility.
+* Show a friendly "Open Extension Preferences" view instead of crashing when credentials cannot be resolved.
+
 ## [Add RUM Applications and other improvements] - 2024-03-17
 
 * Add "List RUM Applications" command.
