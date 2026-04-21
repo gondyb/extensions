@@ -1,5 +1,10 @@
 # Datadog Changelog
 
+## [Launch Claude Code from a case] - 2026-04-21
+
+* Add `Launch in Claude Code (Cmux)` action on every case — opens a new cmux workspace and runs `claude --dangerously-skip-permissions` with a prompt built from the case (key, title, URL, description).
+* Per-command `Claude Workspace Directory` preference — sets the cwd cmux opens in.
+
 ## [Add Case Management] - 2026-04-20
 
 * Add "List Cases" command — browse, search, and filter Case Management cases by project. Shows assignee Gravatar and case priority.

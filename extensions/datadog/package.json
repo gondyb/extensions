@@ -79,6 +79,13 @@
           "description": "Extra Datadog search filter always applied (e.g. 'priority:P1', 'assignee.handle:@me').",
           "type": "textfield",
           "required": false
+        },
+        {
+          "name": "claude-workspace-cwd",
+          "title": "Claude Workspace Directory",
+          "description": "Working directory opened in cmux when launching a Claude Code session from a case. Defaults to your home directory.",
+          "type": "textfield",
+          "required": false
         }
       ]
     }
