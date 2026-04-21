@@ -8,7 +8,16 @@ import {
   CLOSED,
 } from "@datadog/datadog-api-client/dist/packages/datadog-api-client-v2/models/CaseStatus";
 import { NOT_DEFINED } from "@datadog/datadog-api-client/dist/packages/datadog-api-client-v2/models/CasePriority";
-import { apiUpdateCaseStatus, caseManagementApi, CaseTypeStatuses, CurrentUser, RawCase, RawUser } from "./datadog-api";
+import {
+  apiGetCase,
+  apiUpdateCaseStatus,
+  caseManagementApi,
+  CaseTypeStatuses,
+  CurrentUser,
+  RawCase,
+  RawUser,
+} from "./datadog-api";
+import { launchClaudeCmux } from "./launchClaudeCmux";
 import { linkDomain } from "./util";
 import { useCases } from "./useCases";
 import { useProjects } from "./useProjects";
@@ -229,6 +238,29 @@ const CaseListItem = ({
     }
   };
 
+  const onLaunchClaude = async () => {
+    const { "claude-workspace-cwd": cwdPref } = getPreferenceValues<{ "claude-workspace-cwd"?: string }>();
+    const toast = await showToast({ style: Toast.Style.Animated, title: "Launching Claude Code in cmux…" });
+    try {
+      const full = await apiGetCase(id);
+      await launchClaudeCmux(
+        {
+          key,
+          title,
+          url,
+          description: (full.case.attributes as { description?: string })?.description,
+        },
+        cwdPref,
+      );
+      toast.style = Toast.Style.Success;
+      toast.title = "Claude Code launched in cmux";
+    } catch (e) {
+      toast.style = Toast.Style.Failure;
+      toast.title = "Failed to launch Claude Code";
+      toast.message = e instanceof Error ? e.message : String(e);
+    }
+  };
+
   return (
     <List.Item
       id={id}
@@ -255,6 +287,12 @@ const CaseListItem = ({
               icon={isMine ? Icon.PersonCircle : Icon.Person}
               shortcut={{ modifiers: ["cmd", "shift"], key: "a" }}
               onAction={isMine ? onUnassign : onAssignToMe}
+            />
+            <Action
+              title="Launch in Claude Code (Cmux)"
+              icon={Icon.Terminal}
+              shortcut={{ modifiers: ["cmd", "shift"], key: "l" }}
+              onAction={onLaunchClaude}
             />
           </ActionPanel.Section>
           <ActionPanel.Section title="Filters">
