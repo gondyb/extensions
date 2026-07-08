@@ -65,6 +65,22 @@
       "subtitle": "Datadog",
       "description": "List RUM Applications",
       "mode": "view"
+    },
+    {
+      "name": "command-list-cases",
+      "title": "List Cases",
+      "subtitle": "Datadog",
+      "description": "List Case Management cases",
+      "mode": "view",
+      "preferences": [
+        {
+          "name": "default-filter",
+          "title": "Default Filter",
+          "description": "Extra Datadog search filter always applied (e.g. 'priority:P1', 'assignee.handle:@me').",
+          "type": "textfield",
+          "required": false
+        }
+      ]
     }
   ],
   "preferences": [
